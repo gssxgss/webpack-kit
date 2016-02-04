@@ -1,7 +1,6 @@
 module.exports = {
   src: 'src',
-  dev: 'debug',
-  prod: 'public',
+  dist: 'public',
 
   html: 'html',
   css: 'css',

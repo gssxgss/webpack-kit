@@ -22,6 +22,7 @@ module.exports = {
   },
   html: [
     getHtml('index', ['common', 'index']),
+    getHtml('directory/subpage', ['common']),
     getHtml('404', ['common', 'error']),
   ],
   css: [

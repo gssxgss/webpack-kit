@@ -8,8 +8,7 @@ const entry = require('./config/entry');
 
 const ROOT = path.resolve(__dirname),
       SRC = path.resolve(ROOT, folder.src),
-      DEV = path.resolve(ROOT, folder.dev),
-      PROD = path.resolve(ROOT, folder.prod);
+      DIST = path.resolve(ROOT, folder.dist);
 
 const isProd = () => {
   return process.env.NODE_ENV === 'production';
@@ -17,7 +16,7 @@ const isProd = () => {
 
 module.exports =  {
   devServer: {
-    contentBase: DEV,
+    contentBase: SRC,
     hot: true,
     inline: true,
   },
@@ -25,7 +24,7 @@ module.exports =  {
   entry: entry.js,
   output: {
     filename: 'js/[name].js',
-    path: isProd() ? PROD : DEV,
+    path: DIST,
     //publicPath: '/',
   },
   resolve: {
@@ -92,7 +91,7 @@ module.exports =  {
     new webpack.optimize.UglifyJsPlugin({
       compress: {warnings: false},
     }),
-    new CleanWebpackPlugin([folder.prod], {
+    new CleanWebpackPlugin([folder.dist], {
       root: ROOT,
       verbose: false,
     }),
