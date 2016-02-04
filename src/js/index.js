@@ -1,2 +1,3 @@
+require('../css/app.styl');
+
 console.log('Hello, World!');
-require('../css/app.css');

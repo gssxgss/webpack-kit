@@ -1,14 +1,10 @@
-const path = require("path"),
-      webpack = require("webpack"),
-      ExtractTextPlugin = require("extract-text-webpack-plugin"),
-      HtmlWebpackPlugin = require('html-webpack-plugin'),
+const path = require('path'),
+      webpack = require('webpack'),
+      ExtractTextPlugin = require('extract-text-webpack-plugin'),
+      CleanWebpackPlugin = require('clean-webpack-plugin');
 
-      autoprefixer = require('autoprefixer'),
-      precss = require('precss'),
-      postcssAssets = require('postcss-assets');
-
-const folder = require("./config/folder");
-const entry = require("./config/entry");
+const folder = require('./config/folder');
+const entry = require('./config/entry');
 
 const ROOT = path.resolve(__dirname),
       SRC = path.resolve(ROOT, folder.src),
@@ -16,7 +12,7 @@ const ROOT = path.resolve(__dirname),
       PROD = path.resolve(ROOT, folder.prod);
 
 const isProd = () => {
-  return process.env.NODE_ENV === "production";
+  return process.env.NODE_ENV === 'production';
 };
 
 module.exports =  {
@@ -25,75 +21,83 @@ module.exports =  {
     hot: true,
     inline: true,
   },
-  devtool: isProd() ? "" : "source-map",
-  entry: entry,
+  devtool: isProd() ? '' : 'source-map',
+  entry: entry.js,
   output: {
-    filename: "[name].js",
+    filename: 'js/[name].js',
     path: isProd() ? PROD : DEV,
-    //publicPath: "/",
+    //publicPath: '/',
   },
   resolve: {
-    extensions: ["", ".js", ".css", ".jade"],
+    extensions: ['', '.js', '.styl', '.jade'],
   },
   module: {
     preLoaders: [
       {
         test: /\.js$/,
-        loader: isProd() ? "" : "eslint",
+        loader: 'eslint',
         include: SRC,
       }
     ],
-    loaders: [
-      {
+    loaders: [{
         test: /\.js$/,
         exclude: /node_modules|bower_components/,
-        loader: "babel",
-        //include: Path.resolve(SRC, folder.js),
-      },
-      {
-        test: /\.css$/,
-        loader: ExtractTextPlugin.extract("css!postcss"),
-        //include: Path.resolve(SRC, folder.css),
-      },
-      {
+        loader: 'babel',
+      }, {
+        test: /\.json$/,
+        exclude: /node_modules|bower_components/,
+        loader: 'json',
+      }, {
+        test: /\.styl$/,
+        loader: ExtractTextPlugin.extract('css!stylus'),
+        include: path.resolve(SRC, folder.css),
+      }, {
+        test: /\.(woff2?|eot|ttf)$/,
+        loader: 'file?name=font/[name].[hash].[ext]',
+      }, {
         test: /\.jade$/,
-        loader: "html!jade-html",
+        loader: 'html!jade-html',
+      }, {
+        test: /\.html$/,
+        loader: 'html',
+      }, {
+        test: /\.(png|jpe?g|gif|svg)$/,
+        loaders: [
+          'file?name=img/[name].[hash].[ext]',
+          'image-webpack?{bypassOnDebug: true, progressive: true}',
+        ],
       },
-    ],
-  },
 
-  postcss: function () {
-    return [
-      autoprefixer,
-      precss,
-      postcssAssets({loadPaths: [folder.img]}),
-    ];
+    ],
   },
 
   jade: {
     pretty: isProd() ? false : true
   },
 
+  stylus: {
+    use: [
+      require('nib'),
+      require('autoprefixer-stylus')({
+        browsers: [
+          'last 2 versions',
+        ]}),
+    ],
+    import: ['~nib/lib/nib/index.styl'],
+  },
+
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    //new webpack.NoErrorsPlugin(),
+    new webpack.NoErrorsPlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compress: {warnings: false},
     }),
-
-    new webpack.optimize.CommonsChunkPlugin("common", "common.js"),
-    new ExtractTextPlugin("app.css"),
-
-    new HtmlWebpackPlugin({
-      filename: "index.html",
-      template: path.resolve(SRC, folder.html, "index.jade"),
-      chunks: ['common', 'index'],
+    new CleanWebpackPlugin([folder.prod], {
+      root: ROOT,
+      verbose: false,
     }),
-    new HtmlWebpackPlugin({
-      filename: "404.html",
-      template: path.resolve(SRC, folder.html, "404.jade"),
-      chunks: ['common', 'error']
-    })
-  ],
+    new webpack.optimize.CommonsChunkPlugin('common', 'js/common.js'),
+  ]
+  .concat(entry.html, entry.css),
 
 };
